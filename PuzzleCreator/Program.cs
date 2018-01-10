@@ -10,9 +10,6 @@ using System.Threading.Tasks;
 namespace PuzzleCreator {
     class Program {
         
-        //this is a test for git
-        //test 3 help dear god why
-        
         //                        GLOBALS
         //-------------------------------------------------------
         private static List<string> answers = new List<string>();
