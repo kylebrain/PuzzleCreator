@@ -30,13 +30,13 @@ namespace PuzzleCreator
             //Check subject then participle
             var endIndex = partOfSentence_analyzer(partOfSpeech_array, "n p", "j a m d", 0);
             if((endIndex > -1) && (endIndex + 1 <= len - 1)) {
-                if(partOfSentence_analyzer(partOfSpeech_array, "v", "r", endIndex + 1) == len - 1) {
+                if(partOfSentence_analyzer(partOfSpeech_array, "v", "r h", endIndex + 1) == len - 1) {
                     isSentence = true;
                 }
             }
             //If that's false, check participle then subject
             if(!isSentence) {
-                endIndex = partOfSentence_analyzer(partOfSpeech_array, "v", "r", 0);
+                endIndex = partOfSentence_analyzer(partOfSpeech_array, "v", "r h", 0);
                 if((endIndex > -1) && (endIndex + 1 <= len - 1)) {
                     if(partOfSentence_analyzer(partOfSpeech_array, "n p", "j a m d", endIndex + 1) == len - 1) {
                         isQuestion = true;

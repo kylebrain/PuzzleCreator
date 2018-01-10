@@ -12,3 +12,4 @@ r: adverb
 m: number
 d: amount
 u: exclamation
+h: helping verb
