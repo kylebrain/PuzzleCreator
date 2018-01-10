@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace PuzzleCreator
 {
@@ -27,7 +28,7 @@ namespace PuzzleCreator
              */
             
             //Check subject then participle
-            var endIndex = partOfSentence_analyzer(partOfSpeech_array, "n", "j", 0);
+            var endIndex = partOfSentence_analyzer(partOfSpeech_array, "n p", "j a m d", 0);
             if((endIndex > -1) && (endIndex + 1 <= len - 1)) {
                 if(partOfSentence_analyzer(partOfSpeech_array, "v", "r", endIndex + 1) == len - 1) {
                     isSentence = true;
@@ -37,7 +38,7 @@ namespace PuzzleCreator
             if(!isSentence) {
                 endIndex = partOfSentence_analyzer(partOfSpeech_array, "v", "r", 0);
                 if((endIndex > -1) && (endIndex + 1 <= len - 1)) {
-                    if(partOfSentence_analyzer(partOfSpeech_array, "n", "j", endIndex + 1) == len - 1) {
+                    if(partOfSentence_analyzer(partOfSpeech_array, "n p", "j a m d", endIndex + 1) == len - 1) {
                         isQuestion = true;
                     }
                 }
@@ -131,9 +132,10 @@ namespace PuzzleCreator
          */
         private static bool HasMatch( string input, string desired ) {
             string[] words = input.Split(null);
+            string[] pos = desired.Split(null);
             bool isEqual = false;
             foreach(string cur in words) {
-                if(cur == desired) {
+                if(pos.Contains(cur)) {
                     isEqual = true;
                 }
             }

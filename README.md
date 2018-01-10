@@ -10,3 +10,5 @@ c: conjuction
 p: pronoun
 r: adverb
 m: number
+d: amount
+u: exclamation
