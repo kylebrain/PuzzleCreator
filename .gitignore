@@ -8,6 +8,7 @@
 .idea/dictionaries
 .idea/
 .vs/
+*.*.iml
 
 # Sensitive or high-churn files:
 .idea/**/dataSources/
