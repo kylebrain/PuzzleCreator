@@ -27,8 +27,7 @@ namespace PuzzleCreator
              */
             
             //Check subject then participle
-            int endIndex;
-            endIndex = partOfSentence_analyzer(partOfSpeech_array, "n", "j", 0);
+            var endIndex = partOfSentence_analyzer(partOfSpeech_array, "n", "j", 0);
             if((endIndex > -1) && (endIndex + 1 <= len - 1)) {
                 if(partOfSentence_analyzer(partOfSpeech_array, "v", "r", endIndex + 1) == len - 1) {
                     isSentence = true;
