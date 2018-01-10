@@ -53,6 +53,6 @@ crashlytics-build.properties
 fabric.properties
 
 # Builds
-PuzzleCreator/bin/
-PuzzleCreator/obj/
-PuzzleCreator/Properties/
+PuzzleCreator/bin
+PuzzleCreator/obj
+PuzzleCreator/Properties
