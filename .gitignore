@@ -7,6 +7,7 @@
 .idea/**/contentModel.xml
 .idea/dictionaries
 .idea/
+.vs/
 
 # Sensitive or high-churn files:
 .idea/**/dataSources/
@@ -50,3 +51,8 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
+
+# Builds
+PuzzleCreator/bin
+PuzzleCreator/obj
+PuzzleCreator/Properties
