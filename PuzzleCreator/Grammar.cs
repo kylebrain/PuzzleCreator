@@ -9,7 +9,7 @@ namespace PuzzleCreator
                 
         /* Apply grammar rules (must have subject and participle) to ensure real sentences are generated.
          */
-        public void grammarCheck( string str, string[] partOfSpeech_array ) {
+        public void GrammarCheck( string str, string[] partOfSpeech_array ) {
             bool isSentence = false;
             bool isQuestion = false;
             int len = partOfSpeech_array.Length;
@@ -51,7 +51,7 @@ namespace PuzzleCreator
                 return;
             }
             string last = partOfSpeech_array[len - 1];
-            if(!hasMatch(last, "a") && !hasMatch(last, "m") && (last != "u") && (last != "x") ){
+            if(!HasMatch(last, "a") && !HasMatch(last, "m") && (last != "u") && (last != "x") ){
                 answers.Add(str);
             }
         }
@@ -68,7 +68,7 @@ namespace PuzzleCreator
             //1-word pattern
             //n
             //v
-            bool firstIsBase = hasMatch(ps[i], b);
+            bool firstIsBase = HasMatch(ps[i], b);
             if(firstIsBase) {
                 ret = i;
             }
@@ -79,8 +79,8 @@ namespace PuzzleCreator
             //2-word pattern
             //a n
             //r v
-            bool firstIsMod = hasMatch(ps[i], mod);
-            bool secIsBase = hasMatch(ps[i + 1], b);
+            bool firstIsMod = HasMatch(ps[i], mod);
+            bool secIsBase = HasMatch(ps[i + 1], b);
             if(firstIsMod && secIsBase) {
                 ret = i + 1;
             }
@@ -91,8 +91,8 @@ namespace PuzzleCreator
             //3-word pattern
             //n c n
             //v c v
-            bool secIsC = hasMatch(ps[i + 1], "c");
-            bool thirdIsBase = hasMatch(ps[i + 2], b);
+            bool secIsC = HasMatch(ps[i + 1], "c");
+            bool thirdIsBase = HasMatch(ps[i + 2], b);
             if(firstIsBase && secIsC && thirdIsBase) {
                 ret = i + 2;
             }
@@ -103,9 +103,9 @@ namespace PuzzleCreator
             //4-word patterns
             //n c a n OR a n c n
             //v c r v OR r v c v
-            bool thirdIsMod = hasMatch(ps[i + 2], mod);
-            bool fourthIsBase = hasMatch(ps[i + 3], b);
-            bool thirdIsC = hasMatch(ps[i + 2], "c");
+            bool thirdIsMod = HasMatch(ps[i + 2], mod);
+            bool fourthIsBase = HasMatch(ps[i + 3], b);
+            bool thirdIsC = HasMatch(ps[i + 2], "c");
             if(firstIsBase && secIsC && thirdIsMod && fourthIsBase) {
                 ret = i + 3;
             } else if(firstIsMod && secIsBase && thirdIsC && fourthIsBase) {
@@ -118,8 +118,8 @@ namespace PuzzleCreator
             //5-word pattern
             //a n c a n
             //r v c r v
-            bool fourthIsMod = hasMatch(ps[i + 3], mod);
-            bool fifthIsBase = hasMatch(ps[i + 4], b);
+            bool fourthIsMod = HasMatch(ps[i + 3], mod);
+            bool fifthIsBase = HasMatch(ps[i + 4], b);
             if(firstIsMod && secIsBase && thirdIsC && fourthIsMod && fifthIsBase) {
                 ret = i + 4;
 
@@ -130,7 +130,7 @@ namespace PuzzleCreator
 
         /* Checks if the desired string is one of the tags for the input word
          */
-        private static bool hasMatch( string input, string desired ) {
+        private static bool HasMatch( string input, string desired ) {
             string[] words = input.Split(null);
             bool isEqual = false;
             foreach(string cur in words) {

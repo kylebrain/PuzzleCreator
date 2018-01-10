@@ -43,19 +43,23 @@ namespace PuzzleCreator {
 
             //Get input
             Console.WriteLine("Enter a string: ");
-            string str = Console.ReadLine().ToLower();
+            var readLine = Console.ReadLine();
+            if (readLine != null)
+            {
+                string str = readLine.ToLower();
 
-            //Process input
-            mainLoop(str);
-            printAnswers();
+                //Process input
+                MainLoop(str);
+                PrintAnswers();
 
-            //Reprint input, and display timing information
-            Console.WriteLine("\n\n----------------------------------------");
+                //Reprint input, and display timing information
+                Console.WriteLine("\n\n----------------------------------------");
                 Console.WriteLine("Number of results: " + alreadyPrinted.Count);
 
-            Console.WriteLine("----------------------------------------");
+                Console.WriteLine("----------------------------------------");
                 Console.WriteLine("Input:  " + "\"" + str + "\"");
                 Console.WriteLine("Char length: " + str.Length);
+            }
 
             Console.WriteLine("----------------------------------------");
                 Console.WriteLine("Start time   " + startTime);
@@ -72,7 +76,7 @@ namespace PuzzleCreator {
         /* Iterates over all possible deletion permutations from (1) to (2^n - 1) of the input string.
          * Calls parseString() once for each permutation.
          */
-        private static void mainLoop( string str )
+        private static void MainLoop( string str )
         {
             string temp = str;
             int len = str.Length;
@@ -80,7 +84,7 @@ namespace PuzzleCreator {
             Console.WriteLine("Char length: " + len + "\n");
             startTime = DateTime.Now.ToString("h:mm:ss tt");
             Console.WriteLine("Start time   " + startTime + "\n\n------------------------------------------------------------------------------------------------------------------------");
-            displayPercent(0);
+            DisplayPercent(0);
 
             //Number of permutations possible
             ulong perms = (ulong)1 << len;
@@ -120,13 +124,13 @@ namespace PuzzleCreator {
                 }
 
                 //Check permutation's validity, then reset temp
-                permute(temp);
+                Permute(temp);
                 temp = str;
 
                 //
                 if(index % loopsPerStep == 0) {
                     percent += percentStep;
-                    displayPercent((int)percent);
+                    DisplayPercent((int)percent);
                 }
             }
 
@@ -135,7 +139,7 @@ namespace PuzzleCreator {
         }
 
         //Displays the percent bar while generating hits
-        private static void displayPercent(int percent ) {
+        private static void DisplayPercent(int percent ) {
             Console.Write("\r" + string.Format("{0,3}", percent) + "% completed ");
 
             Console.Write("[[");
@@ -152,7 +156,7 @@ namespace PuzzleCreator {
               - All words must be real English
          * If a string satisfies these conditions, next check its grammar
          */
-        private static void permute( string str ) {
+        private static void Permute( string str ) {
 
             string[] subStrings = str.Split(null);
             int numWords = subStrings.Length;
@@ -183,14 +187,14 @@ namespace PuzzleCreator {
 
             //All words must be real English
             if(realWords_count == numWords) {
-                grammar.grammarCheck(str, partOfSpeech_list.ToArray());
+                grammar.GrammarCheck(str, partOfSpeech_list.ToArray());
             }
         }
 
         /* Checks whether each string in List<string> answer has been printed already.
          * If so, move on; otherwise, print it and record that it's been printed.
          */
-        private static void printAnswers() {
+        private static void PrintAnswers() {
             foreach(string cur in grammar.answers) {
                 if(!alreadyPrinted.Contains(cur)) {
                     var toPrint = char.ToUpper(cur.First()) + cur.Substring(1).ToLower();
