@@ -6,8 +6,6 @@
 .idea/**/tasks.xml
 .idea/**/contentModel.xml
 .idea/dictionaries
-
-#change later if neccessary
 .idea/
 
 # Sensitive or high-churn files:
