@@ -5,8 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-//greetngs traveler
-//Second test
+//Testing gitignore
 namespace PuzzleCreator {
     class Program {
         
