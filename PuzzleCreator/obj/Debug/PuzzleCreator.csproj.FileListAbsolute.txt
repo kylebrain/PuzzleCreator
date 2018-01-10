@@ -18,3 +18,10 @@ C:\Users\Kyle\Documents\_git\PuzzleCreator\PuzzleCreator\bin\Debug\PuzzleCreator
 C:\Users\Kyle\Documents\_git\PuzzleCreator\PuzzleCreator\bin\Debug\PuzzleCreator.pdb
 C:\Users\Kyle\Documents\_git\PuzzleCreator\PuzzleCreator\obj\Debug\PuzzleCreator.csprojResolveAssemblyReference.cache
 C:\Users\Kyle\Documents\_git\PuzzleCreator\PuzzleCreator\obj\Debug\PuzzleCreator.csproj.CoreCompileInputs.cache
+C:\Users\Octopus\Documents\_Git\PuzzleCreator\PuzzleCreator\bin\Debug\PuzzleCreator.exe.config
+C:\Users\Octopus\Documents\_Git\PuzzleCreator\PuzzleCreator\bin\Debug\PuzzleCreator.exe
+C:\Users\Octopus\Documents\_Git\PuzzleCreator\PuzzleCreator\bin\Debug\PuzzleCreator.pdb
+C:\Users\Octopus\Documents\_Git\PuzzleCreator\PuzzleCreator\obj\Debug\PuzzleCreator.csprojResolveAssemblyReference.cache
+C:\Users\Octopus\Documents\_Git\PuzzleCreator\PuzzleCreator\obj\Debug\PuzzleCreator.csproj.CoreCompileInputs.cache
+C:\Users\Octopus\Documents\_Git\PuzzleCreator\PuzzleCreator\obj\Debug\PuzzleCreator.exe
+C:\Users\Octopus\Documents\_Git\PuzzleCreator\PuzzleCreator\obj\Debug\PuzzleCreator.pdb
