@@ -224,8 +224,10 @@ namespace PuzzleCreator {
         private static int partOfSentence_analyzer( string[] ps, string b, string mod, int i ) {
             int ret = -1;
             int lastIndex = ps.Length - 1;
-
+            
             //1-word pattern
+            //n
+            //v
             bool firstIsBase = hasMatch(ps[i], b);
             if(firstIsBase) {
                 ret = i;
@@ -235,6 +237,8 @@ namespace PuzzleCreator {
             }
 
             //2-word pattern
+            //a n
+            //r v
             bool firstIsMod = hasMatch(ps[i], mod);
             bool secIsBase = hasMatch(ps[i + 1], b);
             if(firstIsMod && secIsBase) {
@@ -245,6 +249,8 @@ namespace PuzzleCreator {
             }
 
             //3-word pattern
+            //n c n
+            //v c v
             bool secIsC = hasMatch(ps[i + 1], "c");
             bool thirdIsBase = hasMatch(ps[i + 2], b);
             if(firstIsBase && secIsC && thirdIsBase) {
@@ -255,6 +261,8 @@ namespace PuzzleCreator {
             }
 
             //4-word patterns
+            //n c a n OR a n c n
+            //v c r v OR r v c v
             bool thirdIsMod = hasMatch(ps[i + 2], mod);
             bool fourthIsBase = hasMatch(ps[i + 3], b);
             bool thirdIsC = hasMatch(ps[i + 2], "c");
@@ -268,6 +276,8 @@ namespace PuzzleCreator {
             }
 
             //5-word pattern
+            //a n c a n
+            //r v c r v
             bool fourthIsMod = hasMatch(ps[i + 3], mod);
             bool fifthIsBase = hasMatch(ps[i + 4], b);
             if(firstIsMod && secIsBase && thirdIsC && fourthIsMod && fifthIsBase) {
