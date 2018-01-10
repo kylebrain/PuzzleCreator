@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace PuzzleCreator
 {
@@ -132,7 +130,7 @@ namespace PuzzleCreator
 
         /* Checks if the desired string is one of the tags for the input word
          */
-        public static bool hasMatch( string input, string desired ) {
+        private static bool hasMatch( string input, string desired ) {
             string[] words = input.Split(null);
             bool isEqual = false;
             foreach(string cur in words) {
