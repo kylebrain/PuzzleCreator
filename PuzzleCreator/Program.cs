@@ -5,7 +5,6 @@ using NHunspell;
 
 
 
-
 namespace PuzzleCreator{
     class Program{
         private static readonly Hunspell hunspell = new Hunspell("en_us.aff", "en_us.dic");
@@ -57,8 +56,9 @@ namespace PuzzleCreator{
     
                 
         
-        public static void Main(){
-    
+        public static void Main()
+        {
+            
             //Console.BufferHeight = Int16.MaxValue - 1;
             //Console.WindowWidth = Console.LargestWindowWidth;
             //Console.WindowHeight = Console.LargestWindowHeight;
@@ -69,6 +69,9 @@ namespace PuzzleCreator{
     
             //Process input
             MainLoop(str);
+            
+            grammar.GrammarMain();
+            
             PrintAnswers();
     
             //Reprint input, and display timing information
@@ -197,7 +200,7 @@ namespace PuzzleCreator{
             }
 
             if( allWords ){
-                grammar.answers.Add(str);
+                grammar.sentences.Add(str);
             }
         }
             
