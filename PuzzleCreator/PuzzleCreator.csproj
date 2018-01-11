@@ -51,9 +51,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Hunspellx64.dll" />
-    <None Include="Hunspellx86.dll" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="Office">
@@ -65,6 +62,10 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="bin\Debug\Hunspellx64.dll" />
+    <Content Include="bin\Debug\Hunspellx86.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
