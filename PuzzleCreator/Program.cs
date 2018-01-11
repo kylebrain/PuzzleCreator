@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using NHunspell;
-
+using System.Data.SQLite;
+using com.sun.tools.classfile;
 
 
 namespace PuzzleCreator{
@@ -18,6 +19,8 @@ namespace PuzzleCreator{
             "a",
             "i"
         };
+        
+        private static List<string> dict = new List<string>();
     
         private static readonly List<string> twoLetterWords = new List<string>(){
             "ad",
@@ -52,9 +55,36 @@ namespace PuzzleCreator{
         private static readonly List<string> alreadyPrinted = new List<string>();
     
         private static string startTime;
+        
+        static SQLiteConnection m_dbConnection;
         //-------------------------------------------------------
-    
-                
+
+        private static bool CheckWord(string word)
+        {
+            string sql = "SELECT COUNT(*) AS count FROM words WHERE word = '" + word + "'";
+            SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
+            SQLiteDataReader reader = command.ExecuteReader();
+            reader.Read();
+            if (reader["count"].ToString() == "0")
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        private static void InitList(string count)
+        {
+            string sql = "SELECT word FROM words LIMIT " + count;
+            SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
+            SQLiteDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                dict.Add(reader["word"].ToString());
+            }
+        }
         
         public static void Main()
         {
@@ -62,6 +92,15 @@ namespace PuzzleCreator{
             //Console.BufferHeight = Int16.MaxValue - 1;
             //Console.WindowWidth = Console.LargestWindowWidth;
             //Console.WindowHeight = Console.LargestWindowHeight;
+            
+            //establish SQL connection
+            m_dbConnection = new SQLiteConnection("Data Source=../../dictionary.db;Version=3");
+            m_dbConnection.Open();
+
+            Console.WriteLine("Enter frequency count (out of 10,000): ");
+            var coun = Console.ReadLine()?.ToLower();
+            
+            InitList(coun);
     
             //Get input
             Console.WriteLine("Enter a string: ");
@@ -179,6 +218,7 @@ namespace PuzzleCreator{
         private static void Permute(string str){
             string[] subStrings = str.Split(null);
             int numWords = subStrings.Length;
+            int freqScore = 0;
             //Two words minimum
             if (numWords < 2){
                 return;
@@ -189,18 +229,44 @@ namespace PuzzleCreator{
             bool allWords = true;
             foreach (var cur in subStrings){
                 //Words must be specifically allowed 1-letter or 2-letter words, or in the dictionary
-                if (oneLetterWords.Contains(cur) || twoLetterWords.Contains(cur)){
+                if (oneLetterWords.Contains(cur) || twoLetterWords.Contains(cur))
+                {
+                    //freqScore += dict.IndexOf(cur);
                     //nothing
-                } else if( cur.Length > 2 && hunspell.Spell(cur) ){
-                    //nothing
+                    /*} else if( cur.Length > 2 && hunspell.Spell(cur) ){
+                        //nothing*/
+                    
+                    //TODO: potentially could use a HashList to quickly check if value in dictionary
+                } else if( cur.Length > 2 && hunspell.Spell(cur)){
+                    //freqScore += dict.IndexOf(cur);
+                    //nothing    
                 } else{
                     allWords = false;
                     break;
                 }
             }
 
-            if( allWords ){
-                grammar.sentences.Add(str);
+            if( allWords)
+            {
+                foreach (var cur in subStrings)
+                {
+                    //TODO: faster methods for finding index like using a Dictionary or Sorted List
+                    int temp = 0;
+                    if ((temp = dict.IndexOf(cur)) > -1)
+                    {
+                        freqScore += temp;
+                    }
+                    else
+                    {
+                        allWords = false;
+                        break;
+                    }
+                }
+
+                if (allWords && !grammar.sentences.Keys.Contains(str))
+                {
+                    grammar.sentences.Add(str, freqScore / numWords);
+                }   
             }
         }
             
@@ -209,11 +275,13 @@ namespace PuzzleCreator{
          * If so, move on; otherwise, print it and record that it's been printed.
          */
         private static void PrintAnswers(){
-            foreach (string cur in grammar.answers){
-                if (!alreadyPrinted.Contains(cur)){
-                    var toPrint = char.ToUpper(cur.First()) + cur.Substring(1).ToLower();
+            
+            var ordered = grammar.answers.OrderBy(x => x.Value);
+            foreach (var cur in ordered){
+                if (!alreadyPrinted.Contains(cur.Key)){
+                    var toPrint = cur.Value + ": " + char.ToUpper(cur.Key.First()) + cur.Key.Substring(1).ToLower();
                     Console.WriteLine(toPrint);
-                    alreadyPrinted.Add(cur);
+                    alreadyPrinted.Add(cur.Key);
                 }
             }
         }

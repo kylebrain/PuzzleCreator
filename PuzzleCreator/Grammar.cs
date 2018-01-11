@@ -12,11 +12,13 @@ namespace PuzzleCreator
 {
     public class Grammar
     {
-        public List<string> sentences = new List<string>();
-        public List<string> answers = new List<string>();
+        public Dictionary<string, int> sentences = new Dictionary<string, int>();
+        public Dictionary<string, int> answers = new Dictionary<string, int>();
 
         public void GrammarMain()
         {
+            Console.WriteLine(sentences.Count + " potential sentences");
+            
             // Path to models extracted from `stanford-parser-3.8.0-models.jar`
             var jarRoot = "..\\..\\stanford-parser-full-2017-06-09\\stanford-parser-3.8.0-models";
             var modelsDirectory = jarRoot + "\\edu\\stanford\\nlp\\models";
@@ -24,12 +26,12 @@ namespace PuzzleCreator
             // Loading english PCFG parser from file
             var lp = LexicalizedParser.loadModel(modelsDirectory + "\\lexparser\\englishPCFG.ser.gz");
 
-            foreach (string sen in sentences)
+            foreach (var senPair in sentences)
             {
-                string senF = sen;
+                string senF = senPair.Key;
                 bool isSentence = false;
 
-                var sent = sen;
+                var sent = senPair.Key;
                 var tokenizerFactory = PTBTokenizer.factory(new CoreLabelTokenFactory(), "");
                 var sentReader = new StringReader(sent);
                 var rawWords = tokenizerFactory.getTokenizer(sentReader).tokenize();
@@ -39,13 +41,13 @@ namespace PuzzleCreator
 
                     if (strTree.Contains("(S "))
                     {
-                        senF = sen + ".";
+                        senF = senPair.Key + ".";
                         isSentence = true;
                     }
                     else if (strTree.Contains("(SINV ") || strTree.Contains("(SBARQ ") || strTree.Contains("(SQ "))
 
                     {
-                        senF = sen + "?";
+                        senF = senPair.Key + "?";
                         isSentence = true;
                     }
 
@@ -59,7 +61,7 @@ namespace PuzzleCreator
 
                         if (strRel.Contains("nsubj("))
                         {
-                            answers.Add(senF);
+                            answers.Add(senF, senPair.Value);
                         }
                     }
                 }
@@ -124,7 +126,7 @@ namespace PuzzleCreator
                 string last = partOfSpeech_array[len - 1];
                 if (!HasMatch(last, "a") && !HasMatch(last, "m") && (last != "u") && (last != "x"))
                 {
-                    answers.Add(str);
+                    //answers.Add(str);
                 }
             }
 
