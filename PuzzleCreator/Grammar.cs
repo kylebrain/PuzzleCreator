@@ -1,16 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace PuzzleCreator
-{
+namespace PuzzleCreator{
     
-    public class Grammar
-    {
-        public List<string> answers = new List<string>();
+    public class Grammar{
+        public readonly List<string> answers = new List<string>();
                 
         /* Apply grammar rules (must have subject and participle) to ensure real sentences are generated.
          */
-        public void GrammarCheck( string str, string[] partOfSpeech_array ) {
+        public void GrammarCheck( string str, string[] partOfSpeech_array ){
             bool isSentence = false;
             bool isQuestion = false;
             int len = partOfSpeech_array.Length;
@@ -29,25 +27,25 @@ namespace PuzzleCreator
             
             //Check subject then participle
             var endIndex = partOfSentence_analyzer(partOfSpeech_array, "n p", "j a m d", 0);
-            if((endIndex > -1) && (endIndex + 1 <= len - 1)) {
-                if(partOfSentence_analyzer(partOfSpeech_array, "v", "r h", endIndex + 1) == len - 1) {
+            if((endIndex > -1) && (endIndex + 1 <= len - 1)){
+                if(partOfSentence_analyzer(partOfSpeech_array, "v", "r h", endIndex + 1) == len - 1){
                     isSentence = true;
                 }
             }
             //If that's false, check participle then subject
             if(!isSentence) {
                 endIndex = partOfSentence_analyzer(partOfSpeech_array, "v", "r h", 0);
-                if((endIndex > -1) && (endIndex + 1 <= len - 1)) {
-                    if(partOfSentence_analyzer(partOfSpeech_array, "n p", "j a m d", endIndex + 1) == len - 1) {
+                if((endIndex > -1) && (endIndex + 1 <= len - 1)){
+                    if(partOfSentence_analyzer(partOfSpeech_array, "n p", "j a m d", endIndex + 1) == len - 1){
                         isQuestion = true;
                     }
                 }
             }
-            if(isSentence) {
+            if(isSentence){
                 str += ".";
-            } else if(isQuestion) {
+            } else if(isQuestion){
                 str += "?";
-            } else {
+            } else{
                 return;
             }
             string last = partOfSpeech_array[len - 1];
@@ -61,7 +59,7 @@ namespace PuzzleCreator
          * Modifier can be "a" or "r" for adjective or adverb respectively
          * Returns -1 on error, otherwise returns the index of the last character in the part of speech.
          */
-        private static int partOfSentence_analyzer( string[] ps, string b, string mod, int i ) {
+        private static int partOfSentence_analyzer( string[] ps, string b, string mod, int i ){
             int ret = -1;
             int lastIndex = ps.Length - 1;
             
@@ -69,10 +67,10 @@ namespace PuzzleCreator
             //n
             //v
             bool firstIsBase = HasMatch(ps[i], b);
-            if(firstIsBase) {
+            if(firstIsBase){
                 ret = i;
             }
-            if((i + 1) > lastIndex) {
+            if((i + 1) > lastIndex){
                 return ret;
             }
 
@@ -81,10 +79,10 @@ namespace PuzzleCreator
             //r v
             bool firstIsMod = HasMatch(ps[i], mod);
             bool secIsBase = HasMatch(ps[i + 1], b);
-            if(firstIsMod && secIsBase) {
+            if(firstIsMod && secIsBase){
                 ret = i + 1;
             }
-            if((i + 2) > lastIndex) {
+            if((i + 2) > lastIndex){
                 return ret;
             }
 
@@ -93,10 +91,10 @@ namespace PuzzleCreator
             //v c v
             bool secIsC = HasMatch(ps[i + 1], "c");
             bool thirdIsBase = HasMatch(ps[i + 2], b);
-            if(firstIsBase && secIsC && thirdIsBase) {
+            if(firstIsBase && secIsC && thirdIsBase){
                 ret = i + 2;
             }
-            if((i + 3) > lastIndex) {
+            if((i + 3) > lastIndex){
                 return ret;
             }
 
@@ -106,12 +104,12 @@ namespace PuzzleCreator
             bool thirdIsMod = HasMatch(ps[i + 2], mod);
             bool fourthIsBase = HasMatch(ps[i + 3], b);
             bool thirdIsC = HasMatch(ps[i + 2], "c");
-            if(firstIsBase && secIsC && thirdIsMod && fourthIsBase) {
+            if(firstIsBase && secIsC && thirdIsMod && fourthIsBase){
                 ret = i + 3;
-            } else if(firstIsMod && secIsBase && thirdIsC && fourthIsBase) {
+            } else if(firstIsMod && secIsBase && thirdIsC && fourthIsBase){
                 ret = i + 3;
             }
-            if((i + 4) > lastIndex) {
+            if((i + 4) > lastIndex){
                 return ret;
             }
 
@@ -120,7 +118,7 @@ namespace PuzzleCreator
             //r v c r v
             bool fourthIsMod = HasMatch(ps[i + 3], mod);
             bool fifthIsBase = HasMatch(ps[i + 4], b);
-            if(firstIsMod && secIsBase && thirdIsC && fourthIsMod && fifthIsBase) {
+            if(firstIsMod && secIsBase && thirdIsC && fourthIsMod && fifthIsBase){
                 ret = i + 4;
 
             }
@@ -130,12 +128,12 @@ namespace PuzzleCreator
 
         /* Checks if the desired string is one of the tags for the input word
          */
-        private static bool HasMatch( string input, string desired ) {
+        private static bool HasMatch( string input, string desired ){
             string[] words = input.Split(null);
             string[] pos = desired.Split(null);
             bool isEqual = false;
-            foreach(string cur in words) {
-                if(pos.Contains(cur)) {
+            foreach(string cur in words){
+                if(pos.Contains(cur)){
                     isEqual = true;
                 }
             }
