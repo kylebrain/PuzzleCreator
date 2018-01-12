@@ -12,10 +12,10 @@ namespace PuzzleCreator
 {
     public class Grammar
     {
-        public Dictionary<string, int> sentences = new Dictionary<string, int>();
-        public Dictionary<string, int> answers = new Dictionary<string, int>();
+        //public Dictionary<string, int> sentences = new Dictionary<string, int>();
+        public HashSet<string> answers = new HashSet<string>();
 
-        public void GrammarMain()
+        public void GrammarMain(HashSet<string> sentences)
         {
             Console.WriteLine(sentences.Count + " potential sentences");
             
@@ -26,12 +26,11 @@ namespace PuzzleCreator
             // Loading english PCFG parser from file
             var lp = LexicalizedParser.loadModel(modelsDirectory + "\\lexparser\\englishPCFG.ser.gz");
 
-            foreach (var senPair in sentences)
+            foreach (var sen in sentences)
             {
-                string senF = senPair.Key;
                 bool isSentence = false;
 
-                var sent = senPair.Key;
+                var sent = sen;
                 var tokenizerFactory = PTBTokenizer.factory(new CoreLabelTokenFactory(), "");
                 var sentReader = new StringReader(sent);
                 var rawWords = tokenizerFactory.getTokenizer(sentReader).tokenize();
@@ -41,13 +40,13 @@ namespace PuzzleCreator
 
                     if (strTree.Contains("(S "))
                     {
-                        senF = senPair.Key + ".";
+                        sent = sen + ".";
                         isSentence = true;
                     }
                     else if (strTree.Contains("(SINV ") || strTree.Contains("(SBARQ ") || strTree.Contains("(SQ "))
 
                     {
-                        senF = senPair.Key + "?";
+                        sent = sen + "?";
                         isSentence = true;
                     }
 
@@ -61,7 +60,7 @@ namespace PuzzleCreator
 
                         if (strRel.Contains("nsubj("))
                         {
-                            answers.Add(senF, senPair.Value);
+                            answers.Add(sent);
                         }
                     }
                 }

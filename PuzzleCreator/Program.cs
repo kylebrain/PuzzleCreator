@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using NHunspell;
 using System.Data.SQLite;
+using System.Runtime.InteropServices;
+using com.sun.jndi.url.corbaname;
 using com.sun.tools.classfile;
 
 
@@ -14,15 +16,19 @@ namespace PuzzleCreator{
         //                        GLOBALS
         //-------------------------------------------------------
         private static readonly Grammar grammar = new Grammar();
+        
+        private static Dictionary<string, int> sentencesFreq = new Dictionary<string, int>();
+        private static HashSet<string> sentences = new HashSet<string>();
     
-        private static readonly List<string> oneLetterWords = new List<string>(){
+        private static readonly HashSet<string> oneLetterWords = new HashSet<string>() {
             "a",
             "i"
         };
         
-        private static List<string> dict = new List<string>();
+        private static HashSet<string> dict = new HashSet<string>();
+        private static Dictionary<string, int> dictFreq = new Dictionary<string, int>();
     
-        private static readonly List<string> twoLetterWords = new List<string>(){
+        private static readonly HashSet<string> twoLetterWords = new HashSet<string>(){
             "ad",
             "am",
             "an",
@@ -52,38 +58,54 @@ namespace PuzzleCreator{
             "us",
             "we"
         };
-        private static readonly List<string> alreadyPrinted = new List<string>();
+        private static readonly HashSet<string> alreadyPrinted = new HashSet<string>();
     
         private static string startTime;
+
+        private static int countFreq;
         
         static SQLiteConnection m_dbConnection;
         //-------------------------------------------------------
 
-        private static bool CheckWord(string word)
-        {
-            string sql = "SELECT COUNT(*) AS count FROM words WHERE word = '" + word + "'";
-            SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
-            SQLiteDataReader reader = command.ExecuteReader();
-            reader.Read();
-            if (reader["count"].ToString() == "0")
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-        }
 
         private static void InitList(string count)
         {
             string sql = "SELECT word FROM words LIMIT " + count;
             SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
             SQLiteDataReader reader = command.ExecuteReader();
+            int n = 0;
             while (reader.Read())
             {
-                dict.Add(reader["word"].ToString());
+                string word = reader["word"].ToString();
+
+                if (!dictFreq.Keys.Contains(word))
+                {
+                    dictFreq.Add(word, n);
+                    dict.Add(word);
+                    n++;
+                }
             }
+        }
+
+        private static float GetFreqAvg(HashSet<string> words)
+        {
+            float total = 0;
+            int num = 0;
+            foreach (var word in words)
+            {
+                int freq;
+                if (dictFreq.TryGetValue(word, out freq))
+                {
+                    num++;
+                    total += freq;
+                }
+                else
+                {
+                    Console.WriteLine(word + " not in freq words!");
+                }
+            }
+
+            return total / num;
         }
         
         public static void Main()
@@ -98,9 +120,13 @@ namespace PuzzleCreator{
             m_dbConnection.Open();
 
             Console.WriteLine("Enter frequency count (out of 10,000): ");
-            var coun = Console.ReadLine()?.ToLower();
+            string countFreqStr = Console.ReadLine()?.ToLower();
+            countFreq = Int32.Parse(countFreqStr);
             
-            InitList(coun);
+            InitList(countFreqStr);
+            
+            //Console.WriteLine("ONE letter avg score: " + GetFreqAvg(oneLetterWords));
+            //Console.WriteLine("TWO letter avg score: " + GetFreqAvg(twoLetterWords));
     
             //Get input
             Console.WriteLine("Enter a string: ");
@@ -109,7 +135,7 @@ namespace PuzzleCreator{
             //Process input
             MainLoop(str);
             
-            grammar.GrammarMain();
+            grammar.GrammarMain(sentences);
             
             PrintAnswers();
     
@@ -218,7 +244,6 @@ namespace PuzzleCreator{
         private static void Permute(string str){
             string[] subStrings = str.Split(null);
             int numWords = subStrings.Length;
-            int freqScore = 0;
             //Two words minimum
             if (numWords < 2){
                 return;
@@ -236,8 +261,7 @@ namespace PuzzleCreator{
                     /*} else if( cur.Length > 2 && hunspell.Spell(cur) ){
                         //nothing*/
                     
-                    //TODO: potentially could use a HashList to quickly check if value in dictionary
-                } else if( cur.Length > 2 && hunspell.Spell(cur)){
+                } else if( cur.Length > 2 && dict.Contains(cur)){
                     //freqScore += dict.IndexOf(cur);
                     //nothing    
                 } else{
@@ -248,24 +272,27 @@ namespace PuzzleCreator{
 
             if( allWords)
             {
+                int freqScore = 0;
                 foreach (var cur in subStrings)
                 {
-                    //TODO: faster methods for finding index like using a Dictionary or Sorted List
-                    int temp = 0;
-                    if ((temp = dict.IndexOf(cur)) > -1)
+                    if (cur.Length > 2)
                     {
-                        freqScore += temp;
+                        freqScore += dictFreq[cur];
+                    }
+                    else if (cur.Length > 1)
+                    {
+                        freqScore += 35; //average frequency of two letter words
                     }
                     else
                     {
-                        allWords = false;
-                        break;
+                        freqScore += 8; //average frequency of one letter words
                     }
                 }
 
-                if (allWords && !grammar.sentences.Keys.Contains(str))
+                if (allWords && !sentencesFreq.Keys.Contains(str))
                 {
-                    grammar.sentences.Add(str, freqScore / numWords);
+                    sentencesFreq.Add(str, freqScore / numWords);
+                    sentences.Add(str);
                 }   
             }
         }
@@ -275,8 +302,15 @@ namespace PuzzleCreator{
          * If so, move on; otherwise, print it and record that it's been printed.
          */
         private static void PrintAnswers(){
+
+            Dictionary<string, int> answerFreq = new Dictionary<string, int>();
             
-            var ordered = grammar.answers.OrderBy(x => x.Value);
+            foreach (var cur in grammar.answers)
+            {
+                answerFreq.Add(cur, sentencesFreq[cur.Remove(cur.Length - 1, 1)]);
+            }
+            
+            var ordered = answerFreq.OrderBy(x => x.Value);
             foreach (var cur in ordered){
                 if (!alreadyPrinted.Contains(cur.Key)){
                     var toPrint = cur.Value + ": " + char.ToUpper(cur.Key.First()) + cur.Key.Substring(1).ToLower();
