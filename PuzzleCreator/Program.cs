@@ -6,12 +6,14 @@ using System.Data.SQLite;
 using System.Runtime.InteropServices;
 using com.sun.jndi.url.corbaname;
 using com.sun.tools.classfile;
+using org.omg.CORBA;
 
 
 namespace PuzzleCreator{
     class Program{
         private static readonly Hunspell hunspell = new Hunspell("en_us.aff", "en_us.dic");
-    
+
+        private static bool wordSkip = true;
     
         //                        GLOBALS
         //-------------------------------------------------------
@@ -68,7 +70,7 @@ namespace PuzzleCreator{
         //-------------------------------------------------------
 
 
-        private static void InitList(string count)
+        private static void InitList(int count)
         {
             string sql = "SELECT word FROM words LIMIT " + count;
             SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
@@ -119,11 +121,22 @@ namespace PuzzleCreator{
             m_dbConnection = new SQLiteConnection("Data Source=../../dictionary.db;Version=3");
             m_dbConnection.Open();
 
-            Console.WriteLine("Enter frequency count (out of 10,000): ");
-            string countFreqStr = Console.ReadLine()?.ToLower();
-            countFreq = Int32.Parse(countFreqStr);
+            if (wordSkip)
+            {
+                Console.WriteLine("Word skip enabled!");
+            }
+
+            string countFreqStr;
             
-            InitList(countFreqStr);
+            do
+            {
+
+                Console.WriteLine("Enter frequency count (500 - 10,000): ");
+                countFreqStr = Console.ReadLine()?.ToLower();
+                
+            } while (!int.TryParse(countFreqStr, out countFreq) || countFreq < 500 || countFreq > 10000);
+
+            InitList(countFreq);
             
             //Console.WriteLine("ONE letter avg score: " + GetFreqAvg(oneLetterWords));
             //Console.WriteLine("TWO letter avg score: " + GetFreqAvg(twoLetterWords));
@@ -186,6 +199,7 @@ namespace PuzzleCreator{
             }
             
             ulong loopsPerStep = perms / (ulong) (100 / percentStep);
+            ulong perStep = loopsPerStep;
             //--------------------------------------
     
     
@@ -202,19 +216,25 @@ namespace PuzzleCreator{
                  *    0 = keep character
                  *    1 = delete character
                  */
-                for (var i = len - 1; i >= 0; i--){
+                for (var i = 0; i < len; i++){
                     //remove character if the 'i'th bit of 'index' is 1
                     if ((1 & (index >> i)) == 1){
-                        temp = temp.Remove(i, 1);
+                        temp = temp.Remove(len - 1 - i, 1);
                     }
                 }
     
                 //Check permutation's validity, then reset temp
-                Permute(temp);
+                
+                string bin = Convert.ToString((int)index, 2);
+                //Console.WriteLine(bin + ": " + temp.Replace(" ", "_"));
+                
+                index = Permute(temp, index, str);
                 temp = str;
     
     
-                if (index % loopsPerStep == 0){
+                if (index > loopsPerStep)
+                {
+                    loopsPerStep += perStep;
                     percent += percentStep;
                     DisplayPercent((int) percent);
                 }
@@ -241,18 +261,25 @@ namespace PuzzleCreator{
               - All words must be real English
          * If a string satisfies these conditions, next check its grammar
          */
-        private static void Permute(string str){
+        private static ulong Permute(string str, ulong perm, string full){
             string[] subStrings = str.Split(null);
             int numWords = subStrings.Length;
+            int wrongIndex;
+            int checkLen = 0;
+            //int prevLen = 0;
             //Two words minimum
             if (numWords < 2){
-                return;
+                return perm;
             }
 
             //-----------LOOP----------
             //Check each word in the string seperately
             bool allWords = true;
-            foreach (var cur in subStrings){
+            wordSkip = true;
+            for (int i = 0; i < numWords; i++)
+            {
+                string cur = subStrings[i];
+                checkLen += cur.Length + 1;
                 //Words must be specifically allowed 1-letter or 2-letter words, or in the dictionary
                 if (oneLetterWords.Contains(cur) || twoLetterWords.Contains(cur))
                 {
@@ -265,6 +292,12 @@ namespace PuzzleCreator{
                     //freqScore += dict.IndexOf(cur);
                     //nothing    
                 } else{
+                    if (i == numWords - 1)
+                    {
+                        wordSkip = false;
+                    }
+
+                    checkLen = str.Length - checkLen;
                     allWords = false;
                     break;
                 }
@@ -275,27 +308,63 @@ namespace PuzzleCreator{
                 int freqScore = 0;
                 foreach (var cur in subStrings)
                 {
-                    if (cur.Length > 2)
-                    {
                         freqScore += dictFreq[cur];
-                    }
-                    else if (cur.Length > 1)
-                    {
-                        freqScore += 35; //average frequency of two letter words
-                    }
-                    else
-                    {
-                        freqScore += 8; //average frequency of one letter words
-                    }
                 }
 
                 if (allWords && !sentencesFreq.Keys.Contains(str))
                 {
                     sentencesFreq.Add(str, freqScore / numWords);
                     sentences.Add(str);
+                    //sentences.Add(str);
                 }   
             }
-        }
+            if (!allWords && wordSkip && checkLen > 0)
+            {
+                int index = 0;
+                //ulong mask = (((ulong)1 << (full.Length + 1)) - 1);
+                //int prevCount = 0;
+                //int oneFound = 0;
+                int zeroFound = 0;
+
+                //Console.WriteLine("index/prevCount: " + index);
+                zeroFound = 0;
+                //Console.WriteLine("Check length: " + checkLen);
+                while (zeroFound <= checkLen)
+                {
+                    if (((ulong)(1 << index) & perm) == 0)
+                    {
+                        zeroFound++;
+                    }
+                    index++;
+                }
+                if (index != 0)
+                {
+                    index--;
+                }
+                //Console.WriteLine("index 2: " + index);
+                ulong mask;
+                if (index > -1 && full[full.Length - index - 1] == ' ')
+                {
+                    mask = (ulong) 1 << (index);
+                    ulong newPerm = (perm | mask);
+                    newPerm &= (~(ulong)0) << index;
+                    int skipped = (int)newPerm - (int)perm;
+                    //Console.WriteLine("Skipped: " + skipped);
+                    return newPerm - 1;
+                }
+                else
+                {
+                    return perm;
+                }
+
+            }
+            else
+            {
+                return perm;
+            }
+
+            return perm;
+        } 
             
     
         /* Checks whether each string in List<string> answer has been printed already.

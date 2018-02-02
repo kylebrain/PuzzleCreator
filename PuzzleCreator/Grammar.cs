@@ -17,7 +17,14 @@ namespace PuzzleCreator
 
         public void GrammarMain(HashSet<string> sentences)
         {
-            Console.WriteLine(sentences.Count + " potential sentences");
+            if (sentences.Count == 0)
+            {
+                return;
+            }
+            
+            Console.WriteLine(sentences.Count + " potential sentences\n");
+            
+            Console.WriteLine("EXPECTED ERRORS:");
             
             // Path to models extracted from `stanford-parser-3.8.0-models.jar`
             var jarRoot = "..\\..\\stanford-parser-full-2017-06-09\\stanford-parser-3.8.0-models";
@@ -25,6 +32,8 @@ namespace PuzzleCreator
 
             // Loading english PCFG parser from file
             var lp = LexicalizedParser.loadModel(modelsDirectory + "\\lexparser\\englishPCFG.ser.gz");
+            
+            Console.WriteLine("Stanford Parser Loaded!\n");
 
             foreach (var sen in sentences)
             {
