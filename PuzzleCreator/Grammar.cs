@@ -12,7 +12,6 @@ namespace PuzzleCreator
 {
     public class Grammar
     {
-        //public Dictionary<string, int> sentences = new Dictionary<string, int>();
         public HashSet<string> answers = new HashSet<string>();
 
         public void GrammarMain(HashSet<string> sentences)
@@ -65,6 +64,11 @@ namespace PuzzleCreator
                         var gsf = tlp.grammaticalStructureFactory();
                         var gs = gsf.newGrammaticalStructure(tree);
                         var tdl = gs.typedDependenciesCCprocessed();
+                        
+                        
+                        // Extract collapsed dependencies from parsed tree
+                        // var tp = new TreePrint("wordsAndTags,typedDependenciesCollapsed");
+
                         string strRel = tdl.ToString();
 
                         if (strRel.Contains("nsubj("))

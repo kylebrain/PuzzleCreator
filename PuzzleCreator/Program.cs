@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NHunspell;
 using System.Data.SQLite;
-using System.Runtime.InteropServices;
-using com.sun.jndi.url.corbaname;
-using com.sun.tools.classfile;
-using org.omg.CORBA;
 
 
 namespace PuzzleCreator{
     class Program{
-        private static readonly Hunspell hunspell = new Hunspell("en_us.aff", "en_us.dic");
 
         private static bool wordSkip = true;
     
@@ -137,9 +131,6 @@ namespace PuzzleCreator{
             } while (!int.TryParse(countFreqStr, out countFreq) || countFreq < 500 || countFreq > 10000);
 
             InitList(countFreq);
-            
-            //Console.WriteLine("ONE letter avg score: " + GetFreqAvg(oneLetterWords));
-            //Console.WriteLine("TWO letter avg score: " + GetFreqAvg(twoLetterWords));
     
             //Get input
             Console.WriteLine("Enter a string: ");
@@ -225,7 +216,9 @@ namespace PuzzleCreator{
     
                 //Check permutation's validity, then reset temp
                 
-                string bin = Convert.ToString((int)index, 2);
+                
+                /*use to test binary and string combos*/
+                //string bin = Convert.ToString((int)index, 2);
                 //Console.WriteLine(bin + ": " + temp.Replace(" ", "_"));
                 
                 index = Permute(temp, index, str);
@@ -266,7 +259,7 @@ namespace PuzzleCreator{
             int numWords = subStrings.Length;
             int wrongIndex;
             int checkLen = 0;
-            //int prevLen = 0;
+
             //Two words minimum
             if (numWords < 2){
                 return perm;
@@ -283,13 +276,9 @@ namespace PuzzleCreator{
                 //Words must be specifically allowed 1-letter or 2-letter words, or in the dictionary
                 if (oneLetterWords.Contains(cur) || twoLetterWords.Contains(cur))
                 {
-                    //freqScore += dict.IndexOf(cur);
                     //nothing
-                    /*} else if( cur.Length > 2 && hunspell.Spell(cur) ){
-                        //nothing*/
                     
                 } else if( cur.Length > 2 && dict.Contains(cur)){
-                    //freqScore += dict.IndexOf(cur);
                     //nothing    
                 } else{
                     if (i == numWords - 1)
@@ -315,20 +304,14 @@ namespace PuzzleCreator{
                 {
                     sentencesFreq.Add(str, freqScore / numWords);
                     sentences.Add(str);
-                    //sentences.Add(str);
                 }   
             }
             if (!allWords && wordSkip && checkLen > 0)
             {
                 int index = 0;
-                //ulong mask = (((ulong)1 << (full.Length + 1)) - 1);
-                //int prevCount = 0;
-                //int oneFound = 0;
                 int zeroFound = 0;
 
-                //Console.WriteLine("index/prevCount: " + index);
                 zeroFound = 0;
-                //Console.WriteLine("Check length: " + checkLen);
                 while (zeroFound <= checkLen)
                 {
                     if (((ulong)(1 << index) & perm) == 0)
@@ -341,7 +324,7 @@ namespace PuzzleCreator{
                 {
                     index--;
                 }
-                //Console.WriteLine("index 2: " + index);
+
                 ulong mask;
                 if (index > -1 && full[full.Length - index - 1] == ' ')
                 {
@@ -349,7 +332,6 @@ namespace PuzzleCreator{
                     ulong newPerm = (perm | mask);
                     newPerm &= (~(ulong)0) << index;
                     int skipped = (int)newPerm - (int)perm;
-                    //Console.WriteLine("Skipped: " + skipped);
                     return newPerm - 1;
                 }
                 else
