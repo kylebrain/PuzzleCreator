@@ -151,6 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Grammar.cs" />
+    <Compile Include="MainProgram.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

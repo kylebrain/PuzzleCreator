@@ -1,251 +1,246 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using java.io;
-using edu.stanford.nlp.process;
-using edu.stanford.nlp.ling;
-using edu.stanford.nlp.trees;
-using edu.stanford.nlp.parser.lexparser;
-using ikvm.extensions;
-using Console = System.Console;
+﻿
 
 namespace PuzzleCreator
 {
+    using System.Collections.Generic;
+    using java.io;
+    using edu.stanford.nlp.process;
+    using edu.stanford.nlp.trees;
+    using edu.stanford.nlp.parser.lexparser;
+    using Console = System.Console;
+
     public class Grammar
     {
-        public HashSet<string> answers = new HashSet<string>();
-
-        public void GrammarMain(HashSet<string> sentences)
+        /// <summary>
+        /// Checks the a list of sentences for correct grammar. Returns a new list of the sentences with correct grammar.
+        /// </summary>
+        /// <param name="sentences">A list of strings that will have their grammar checked.</param>
+        /// <returns>A new list of the sentences with correct grammar.</returns>
+        public static HashSet<string> CheckGrammer(HashSet<string> sentences)
         {
+            HashSet<string> answers = new HashSet<string>();
+
+
+            Console.WriteLine(sentences.Count + " potential sentences\n");
             if (sentences.Count == 0)
             {
-                return;
+                return null;
             }
-            
-            Console.WriteLine(sentences.Count + " potential sentences\n");
-            
-            Console.WriteLine("EXPECTED ERRORS:");
-            
-            // Path to models extracted from `stanford-parser-3.8.0-models.jar`
-            var jarRoot = "..\\..\\stanford-parser-full-2017-06-09\\stanford-parser-3.8.0-models";
-            var modelsDirectory = jarRoot + "\\edu\\stanford\\nlp\\models";
 
+            Console.WriteLine("Loading Stanford NLP...");
             // Loading english PCFG parser from file
-            var lp = LexicalizedParser.loadModel(modelsDirectory + "\\lexparser\\englishPCFG.ser.gz");
-            
+            var lp = LexicalizedParser.loadModel("..\\..\\..\\packages\\englishPCFG.ser.gz");
             Console.WriteLine("Stanford Parser Loaded!\n");
 
-            foreach (var sen in sentences)
+            //Test the grammar of each potential sentence that has all english words
+            foreach (var curSentence in sentences)
             {
-                bool isSentence = false;
-
-                var sent = sen;
-                var tokenizerFactory = PTBTokenizer.factory(new CoreLabelTokenFactory(), "");
-                var sentReader = new StringReader(sent);
-                var rawWords = tokenizerFactory.getTokenizer(sentReader).tokenize();
+                //Convert the sentence to a tree that Stanford NLP library generates from its parsing
+                var tempSentence = curSentence;
+                var sentReader = new StringReader(tempSentence);
+                var tree = lp.apply(PTBTokenizer.factory(new CoreLabelTokenFactory(), "").getTokenizer(sentReader).tokenize());
                 sentReader.close();
-                var tree = lp.apply(rawWords);
+
+                //Determine if the word is a sentence
                 string strTree = tree.ToString();
-
-                    if (strTree.Contains("(S "))
-                    {
-                        sent = sen + ".";
-                        isSentence = true;
-                    }
-                    else if (strTree.Contains("(SINV ") || strTree.Contains("(SBARQ ") || strTree.Contains("(SQ "))
-
-                    {
-                        sent = sen + "?";
-                        isSentence = true;
-                    }
-
-                    if (isSentence)
-                    {
-                        var tlp = new PennTreebankLanguagePack();
-                        var gsf = tlp.grammaticalStructureFactory();
-                        var gs = gsf.newGrammaticalStructure(tree);
-                        var tdl = gs.typedDependenciesCCprocessed();
-                        
-                        
-                        // Extract collapsed dependencies from parsed tree
-                        // var tp = new TreePrint("wordsAndTags,typedDependenciesCollapsed");
-
-                        string strRel = tdl.ToString();
-
-                        if (strRel.Contains("nsubj("))
-                        {
-                            answers.Add(sent);
-                        }
-                    }
-                }
-            }
-
-            /* Apply grammar rules (must have subject and participle) to ensure real sentences are generated.
-             */
-            public void GrammarCheck(string str, string[] partOfSpeech_array)
-            {
                 bool isSentence = false;
-                bool isQuestion = false;
-                int len = partOfSpeech_array.Length;
 
-                /*
-                 * a: article
-                 * v: verb
-                 * n: noun
-                 * j: adjective
-                 * r: adverb
-                 * i: preposition
-                 * c: conjunction
-                 * p: pronoun
-                 * m: numbers
-                 */
-
-                //Check subject then participle
-                var endIndex = partOfSentence_analyzer(partOfSpeech_array, "n p", "j a m d", 0);
-                if ((endIndex > -1) && (endIndex + 1 <= len - 1))
+                if (strTree.Contains("(S "))
                 {
-                    if (partOfSentence_analyzer(partOfSpeech_array, "v", "r h", endIndex + 1) == len - 1)
-                    {
-                        isSentence = true;
-                    }
+                    tempSentence = curSentence + ".";
+                    isSentence = true;
                 }
-
-                //If that's false, check participle then subject
-                if (!isSentence)
+                else if (strTree.Contains("(SINV ") || strTree.Contains("(SBARQ ") || strTree.Contains("(SQ "))
                 {
-                    endIndex = partOfSentence_analyzer(partOfSpeech_array, "v", "r h", 0);
-                    if ((endIndex > -1) && (endIndex + 1 <= len - 1))
-                    {
-                        if (partOfSentence_analyzer(partOfSpeech_array, "n p", "j a m d", endIndex + 1) == len - 1)
-                        {
-                            isQuestion = true;
-                        }
-                    }
+                    tempSentence = curSentence + "?";
+                    isSentence = true;
                 }
 
                 if (isSentence)
                 {
-                    str += ".";
-                }
-                else if (isQuestion)
-                {
-                    str += "?";
-                }
-                else
-                {
-                    return;
-                }
+                    var tlp = new PennTreebankLanguagePack();
+                    string strRel = tlp.grammaticalStructureFactory().newGrammaticalStructure(tree).typedDependenciesCCprocessed().ToString();
 
-                string last = partOfSpeech_array[len - 1];
-                if (!HasMatch(last, "a") && !HasMatch(last, "m") && (last != "u") && (last != "x"))
+                    if (strRel.Contains("nsubj("))
+                    {
+                        answers.Add(tempSentence);
+                    }
+                }
+            }
+            return answers;
+        }
+
+#if OLD_GRAMMAR
+        /* Apply grammar rules (must have subject and participle) to ensure real sentences are generated.
+         */
+        public void GrammarCheck(string str, string[] partOfSpeech_array)
+        {
+            bool isSentence = false;
+            bool isQuestion = false;
+            int len = partOfSpeech_array.Length;
+
+            /*
+             * a: article
+             * v: verb
+             * n: noun
+             * j: adjective
+             * r: adverb
+             * i: preposition
+             * c: conjunction
+             * p: pronoun
+             * m: numbers
+             */
+
+            //Check subject then participle
+            var endIndex = partOfSentence_analyzer(partOfSpeech_array, "n p", "j a m d", 0);
+            if ((endIndex > -1) && (endIndex + 1 <= len - 1))
+            {
+                if (partOfSentence_analyzer(partOfSpeech_array, "v", "r h", endIndex + 1) == len - 1)
                 {
-                    //answers.Add(str);
+                    isSentence = true;
                 }
             }
 
-            /* Checks whether a string contains a part of sentence (subject or participle).
-             * Base can be "n" or "v" for noun or verb respectively.
-             * Modifier can be "a" or "r" for adjective or adverb respectively
-             * Returns -1 on error, otherwise returns the index of the last character in the part of speech.
-             */
-            private static int partOfSentence_analyzer(string[] ps, string b, string mod, int i)
+            //If that's false, check participle then subject
+            if (!isSentence)
+
             {
-                int ret = -1;
-                int lastIndex = ps.Length - 1;
-
-                //1-word pattern
-                //n
-                //v
-                bool firstIsBase = HasMatch(ps[i], b);
-                if (firstIsBase)
+                endIndex = partOfSentence_analyzer(partOfSpeech_array, "v", "r h", 0);
+                if ((endIndex > -1) && (endIndex + 1 <= len - 1))
                 {
-                    ret = i;
+                    if (partOfSentence_analyzer(partOfSpeech_array, "n p", "j a m d", endIndex + 1) == len - 1)
+                    {
+                        isQuestion = true;
+                    }
                 }
+            }
 
-                if ((i + 1) > lastIndex)
-                {
-                    return ret;
-                }
+            if (isSentence)
+            {
+                str += ".";
+            }
+            else if (isQuestion)
+            {
+                str += "?";
+            }
+            else
+            {
+                return;
+            }
 
-                //2-word pattern
-                //a n
-                //r v
-                bool firstIsMod = HasMatch(ps[i], mod);
-                bool secIsBase = HasMatch(ps[i + 1], b);
-                if (firstIsMod && secIsBase)
-                {
-                    ret = i + 1;
-                }
+            string last = partOfSpeech_array[len - 1];
+            if (!HasMatch(last, "a") && !HasMatch(last, "m") && (last != "u") && (last != "x"))
+            {
+                //answers.Add(str);
+            }
+        }
 
-                if ((i + 2) > lastIndex)
-                {
-                    return ret;
-                }
+        /* Checks whether a string contains a part of sentence (subject or participle).
+         * Base can be "n" or "v" for noun or verb respectively.
+         * Modifier can be "a" or "r" for adjective or adverb respectively
+         * Returns -1 on error, otherwise returns the index of the last character in the part of speech.
+         */
+        private int partOfSentence_analyzer(string[] ps, string b, string mod, int i)
+        {
+            int ret = -1;
+            int lastIndex = ps.Length - 1;
 
-                //3-word pattern
-                //n c n
-                //v c v
-                bool secIsC = HasMatch(ps[i + 1], "c");
-                bool thirdIsBase = HasMatch(ps[i + 2], b);
-                if (firstIsBase && secIsC && thirdIsBase)
-                {
-                    ret = i + 2;
-                }
+            //1-word pattern
+            //n
+            //v
+            bool firstIsBase = HasMatch(ps[i], b);
+            if (firstIsBase)
+            {
+                ret = i;
+            }
 
-                if ((i + 3) > lastIndex)
-                {
-                    return ret;
-                }
-
-                //4-word patterns
-                //n c a n OR a n c n
-                //v c r v OR r v c v
-                bool thirdIsMod = HasMatch(ps[i + 2], mod);
-                bool fourthIsBase = HasMatch(ps[i + 3], b);
-                bool thirdIsC = HasMatch(ps[i + 2], "c");
-                if (firstIsBase && secIsC && thirdIsMod && fourthIsBase)
-                {
-                    ret = i + 3;
-                }
-                else if (firstIsMod && secIsBase && thirdIsC && fourthIsBase)
-                {
-                    ret = i + 3;
-                }
-
-                if ((i + 4) > lastIndex)
-                {
-                    return ret;
-                }
-
-                //5-word pattern
-                //a n c a n
-                //r v c r v
-                bool fourthIsMod = HasMatch(ps[i + 3], mod);
-                bool fifthIsBase = HasMatch(ps[i + 4], b);
-                if (firstIsMod && secIsBase && thirdIsC && fourthIsMod && fifthIsBase)
-                {
-                    ret = i + 4;
-                }
-
-                //Return... finally :P
+            if ((i + 1) > lastIndex)
+            {
                 return ret;
             }
 
-            /* Checks if the desired string is one of the tags for the input word
-             */
-            private static bool HasMatch(string input, string desired)
+            //2-word pattern
+            //a n
+            //r v
+            bool firstIsMod = HasMatch(ps[i], mod);
+            bool secIsBase = HasMatch(ps[i + 1], b);
+            if (firstIsMod && secIsBase)
             {
-                string[] words = input.Split(null);
-                string[] pos = desired.Split(null);
-                bool isEqual = false;
-                foreach (string cur in words)
-                {
-                    if (pos.Contains(cur))
-                    {
-                        isEqual = true;
-                    }
-                }
-
-                return isEqual;
+                ret = i + 1;
             }
+
+            if ((i + 2) > lastIndex)
+            {
+                return ret;
+            }
+
+            //3-word pattern
+            //n c n
+            //v c v
+            bool secIsC = HasMatch(ps[i + 1], "c");
+            bool thirdIsBase = HasMatch(ps[i + 2], b);
+            if (firstIsBase && secIsC && thirdIsBase)
+            {
+                ret = i + 2;
+            }
+
+            if ((i + 3) > lastIndex)
+            {
+                return ret;
+            }
+
+            //4-word patterns
+            //n c a n OR a n c n
+            //v c r v OR r v c v
+            bool thirdIsMod = HasMatch(ps[i + 2], mod);
+            bool fourthIsBase = HasMatch(ps[i + 3], b);
+            bool thirdIsC = HasMatch(ps[i + 2], "c");
+            if (firstIsBase && secIsC && thirdIsMod && fourthIsBase)
+            {
+                ret = i + 3;
+            }
+            else if (firstIsMod && secIsBase && thirdIsC && fourthIsBase)
+            {
+                ret = i + 3;
+            }
+
+            if ((i + 4) > lastIndex)
+            {
+                return ret;
+            }
+
+            //5-word pattern
+            //a n c a n
+            //r v c r v
+            bool fourthIsMod = HasMatch(ps[i + 3], mod);
+            bool fifthIsBase = HasMatch(ps[i + 4], b);
+            if (firstIsMod && secIsBase && thirdIsC && fourthIsMod && fifthIsBase)
+            {
+                ret = i + 4;
+            }
+
+            //Return... finally :P
+            return ret;
         }
+
+        /* Checks if the desired string is one of the tags for the input word
+         */
+        private bool HasMatch(string input, string desired)
+        {
+            string[] words = input.Split(null);
+            string[] pos = desired.Split(null);
+            bool isEqual = false;
+            foreach (string cur in words)
+            {
+                if (pos.Contains(cur))
+                {
+                    isEqual = true;
+                }
+            }
+
+            return isEqual;
+        }
+#endif
     }
+
+}
